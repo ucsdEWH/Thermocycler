@@ -3,7 +3,9 @@
 ## UI component for the EWH Thermocycler
 
 Authors: YiDing Fang
+
 Maintain: YiDing Fang
+
 Contact: yif017@eng.ucsd.edu
 
 02-02-2017----------
