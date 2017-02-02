@@ -8,7 +8,7 @@ Maintain: YiDing Fang
 
 Contact: yif017@eng.ucsd.edu
 
-### 02-02-2017 
+### NOTES 02-02-2017 
 
 Different ways to represent cycle procedures
 * struct containing the following:
