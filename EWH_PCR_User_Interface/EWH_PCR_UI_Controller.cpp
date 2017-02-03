@@ -40,7 +40,6 @@ int selectProtocol( int(* selectPrompt(int[])) ){
   // return value of the presentation layer determines which protocol to run 
 }
 
-
 /*
  * Creates particular protocol depending on user input
  * 

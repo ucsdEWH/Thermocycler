@@ -15,7 +15,18 @@
  *      
  * 
  */
-
+ 
+/* Populates our ProtocolEntry struct with the appropriate fields
+ * 
+ * Arguments:
+ *    int id is the id to be associated with a protocol
+ *    const char * protocolName is the name of the protocol to be displayed
+ *    int temp[] is the sequence of temperatures that the protocol is to go through
+ *    int cycles[] is the number of cycles to be associated with each temperature in our protocol
+ * 
+ * Return Value:
+ *    return 1 if successful
+ */
 int createProtocol( int id, const char * protocolName, int temps[], int cycles[], ProtocolEntry * entry ){
   entry->pID = id;
   entry->pName = protocolName;
@@ -25,8 +36,21 @@ int createProtocol( int id, const char * protocolName, int temps[], int cycles[]
   }
   return 1;
 }
+
+/**
+int readProtocols(int * payload, ProtocolEntry * protocols[]){
+  *payload = EEPROM.read(0);
   
-int readProtocols(int payload, int indexArray[], const char * names){}
+  for( int i=(METADATA_SIZE-1); i<EEPROM.length(); i++){
+    char * temp[MAX_NAME_LENGTH];
+    for( int j=0; j< MAX_NAME_LENGTH; j++ ){
+      temp[j] = EEPROM.read(i+j);
+    }
+    
+  }
+  
+}
+**/
 
 /*
  * Writes the first bit in EEPROM to store the number of protocols the user is currently using

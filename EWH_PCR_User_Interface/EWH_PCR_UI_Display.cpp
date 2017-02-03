@@ -292,8 +292,10 @@ int deletePrompt( ProtocolEntry protocols[], int * windowFrame, LiquidCrystal_I2
 }
 int * createPrompt(){}
 
+int confirm(ProtocolEntry selected, LiquidCrystal_I2C * lcd ){}
+
 /*
- * Prompts user to select protocol from those stored
+ * Read the input signal from analog pin A3
  *
  * Arguments:
  *    int pinNum represents the pin to be read

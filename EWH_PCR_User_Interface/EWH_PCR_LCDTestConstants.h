@@ -49,7 +49,6 @@ byte downArrow [8] = {
   B00100
 };
 
-
 void initializeLCD(LiquidCrystal_I2C *lcd)
 {
    //initializes LCD screen with 16 columns and 2 rows

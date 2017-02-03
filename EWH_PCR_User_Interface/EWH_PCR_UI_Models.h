@@ -42,7 +42,7 @@ int createProtocol( int id, const char * protocolName, int temps[], int cycles[]
  */
  
 // read all the metadata into our output arrays
-int readProtocols(int payload, int indexArray[], const char * names);
+int readProtocols(int * payload,ProtocolEntry * protocols[]);
 
 // write payload
 int writeMetadata(int payload);
