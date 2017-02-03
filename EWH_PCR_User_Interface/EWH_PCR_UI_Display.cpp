@@ -28,10 +28,8 @@ int numSelection( int rangeMin, int rangeMax, LiquidCrystal_I2C * lcd, int row )
  */
 int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, LiquidCrystal_I2C * lcd ){
   // prompt user
-  lcd->setCursor(0,0);
-  lcd->print( "Select: "  );
-  lcd->print( nameArray[*windowFrame] );
-
+  
+  const char * nameA = *nameArray;
   //extract the number of protocols stored in selected array
   int checkSum = indexArray[0];
   int arrayTail = checkSum++;
@@ -40,6 +38,13 @@ int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, 
 
   // loop while confirm or back have not been pressed
   while(buttonStatus != BUTTON_START || buttonStatus != BUTTON_STOP){
+
+    //lcd->clear();
+    lcd->setCursor(0,0);
+    lcd->print( "Select: "  );
+    lcd->print( nameArray[*windowFrame] );
+    Serial.print(*windowFrame);
+    
     // read in button press value
     buttonStatus = readAnalogButton(BUTTON_PIN);
     // display the values in the window frame
@@ -74,12 +79,12 @@ int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, 
       // _17 _18 _19 _ 2 0 _ 2  1 _
       // 012 345 678 91011 121314 15
       if( *windowFrame < (22-5) ){
-        (*windowFrame)++;
+        (*windowFrame) += 1;
       }
     }
     if(buttonStatus == BUTTON_LEFT){
       if( *windowFrame > 0 ){
-      (*windowFrame)--;
+      (*windowFrame) -= 1;
       }
     }   
   }

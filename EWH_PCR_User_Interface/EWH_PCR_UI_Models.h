@@ -1,11 +1,10 @@
 #ifndef EWH_PCR_UI_MODELS_H
 #define EWH_PCR_UI_MODELS_H
 
+#define MAX_CYCLES 8
 #define MAX_NAME_LENGTH 8
 #define MAX_ENTRIES 24
 #define METADATA_SIZE 64
-
-
 
 #include <EEPROM.h>
 
@@ -23,6 +22,21 @@
  *            Metadata            protocol name        Times               Cycles
  *      
  * 
+ */
+
+/**
+ * ProtocolEntry is a struct defined for the
+ */
+
+struct ProtocolEntry {
+  int PEID;
+  const char *protocolName;
+  int cycles[MAX_CYCLES];
+  int temps[MAX_CYCLES]; 
+};
+
+/**
+ * Functions defined to be used in arduino memory accesses
  */
  
 // read all the metadata into our output arrays

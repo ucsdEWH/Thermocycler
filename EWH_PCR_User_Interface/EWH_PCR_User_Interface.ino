@@ -30,10 +30,16 @@ const char * names[MAX_ENTRIES] = {"0", "1", "2", "3", "4", "5", "6", "7",
 "8", "9", "10", "11", "12", "13", "15", 
 "16", "17", "18", "19", "20", "21", "22", "23"};
 
-int * memStart = &testMemory[0];
-
 // TODO: check this part..... careful with references
+int * memStart = &testMemory[0];
 int * memPtr = memStart;
+
+// for testing struct
+int testID = 0;
+const char * testString = "foobbarr";
+int testCycles[8] = {1,2,3,4,5,6,7};
+int testTemps[8] = {101,102,103,104,105,106,107};
+
 
 /*****************************************END TEMP CONSTANTS*************************************/
 
@@ -48,7 +54,22 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //int selectPrompt( int indexArray[], LiquidCrystal_I2C * lcd ){
+  /**
+  ProtocolEntry testEntry;
+  testEntry.PEID = testID;
+  testEntry.protocolName = testString;
+  for( int i = 0; i < 8; i++){
+    testEntry.cycles[i] = testCycles[i];
+    testEntry.temps[i] = testTemps[i];
+  }
+  for( int i=0; i < 8; i++ ){
+    Serial.println(testEntry.PEID);
+    Serial.println(testEntry.protocolName);
+    Serial.println( testEntry.cycles[i] );
+    Serial.println( testEntry.temps[i] );
+    
+  }
+  **/
 
   
   
