@@ -19,7 +19,7 @@
  *      - 24 entries maximum of 40 bytes each
  *    - reserve first 64 bytes for metadata
  *    | checksum ... XX ... XX | N A M E H E R E | 0 1 2 3 4 5 6 7 ... 0 1 2 3 4 5 6 7 | ... |
- *            Metadata            protocol name        Times               Cycles
+ *            Metadata            protocol name        Temps               Cycles
  *      
  * 
  */
@@ -35,6 +35,7 @@ struct ProtocolEntry {
   int pTemps[MAX_CYCLES]; 
 };
 
+int createProtocol( int id, const char * protocolName, int temps[], int cycles[], ProtocolEntry * entry );
 
 /**
  * Functions defined to be used in arduino memory accesses

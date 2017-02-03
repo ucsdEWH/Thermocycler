@@ -24,7 +24,7 @@
 
 int selectPrompt( ProtocolEntry protocols[], int * windowFrame, LiquidCrystal_I2C * lcd );
 // int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, LiquidCrystal_I2C * lcd );
-int deletePrompt( int indexArray[], const char ** nameArray, int * windowFrame, LiquidCrystal_I2C * lcd);
+int deletePrompt( ProtocolEntry protocols[], int * windowFrame, LiquidCrystal_I2C * lcd);
 int * createPrompt();
 int readAnalogButton( int pinNum );
 

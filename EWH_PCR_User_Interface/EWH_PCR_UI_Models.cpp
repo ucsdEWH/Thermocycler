@@ -15,6 +15,16 @@
  *      
  * 
  */
+
+int createProtocol( int id, const char * protocolName, int temps[], int cycles[], ProtocolEntry * entry ){
+  entry->pID = id;
+  entry->pName = protocolName;
+  for( int i=0; i< MAX_CYCLES; i++ ){
+    entry->pCycles[i] = cycles[i];
+    entry->pTemps[i] = temps[i];
+  }
+  return 1;
+}
   
 int readProtocols(int payload, int indexArray[], const char * names){}
 

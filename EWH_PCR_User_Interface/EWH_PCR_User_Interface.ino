@@ -30,7 +30,7 @@ const char * names[MAX_ENTRIES] = {"0", "1", "2", "3", "4", "5", "6", "7",
 "8", "9", "10", "11", "12", "13", "14", "15", 
 "16", "17", "18", "19", "20", "21", "22", "23"};
 
-ProtocolEntry testProtocol[MAX_ENTRIES];
+ProtocolEntry testProtocols[MAX_ENTRIES];
 
 // TODO: check this part..... careful with references
 int * memStart = &testMemory[0];
@@ -52,30 +52,25 @@ void setup() {
   initializeLCD( &lcd );
   lcd.clear();
 
-
-
-}
-
-void loop() {
   // put your main code here, to run repeatedly:
-  /**
-  ProtocolEntry testEntry;
-  testEntry.PEID = testID;
-  testEntry.protocolName = testString;
-  for( int i = 0; i < 8; i++){
-    testEntry.cycles[i] = testCycles[i];
-    testEntry.temps[i] = testTemps[i];
+  for( int i=0; i<MAX_ENTRIES; i++ ){
+    ProtocolEntry testEntry;
+    createProtocol( i, names[i], testTemps, testCycles, &testEntry );
+    testProtocols[i] = testEntry;
   }
+  
+  /**
   for( int i=0; i < 8; i++ ){
     Serial.println(testEntry.pID);
     Serial.println(testEntry.pName);
     Serial.println( testEntry.pCycles[i] );
     Serial.println( testEntry.pTemps[i] );
   }
-  **/
+  */
 
-  
-  
+}
+
+void loop() {
   // read the state of the switch into a local variable:
   int reading = readAnalogButton(BUTTON_PIN);
 
@@ -107,7 +102,7 @@ void loop() {
   // set the LED:
   // digitalWrite(ledPin, controlState);
   //selectPrompt(memStart, names, &windowFrame, &lcd);
- // selectPrompt(memStart, names, &windowFrame, &lcd);
+  deletePrompt(testProtocols, &windowFrame, &lcd);
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
   lastButtonState = reading;
