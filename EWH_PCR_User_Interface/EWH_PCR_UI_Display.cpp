@@ -33,8 +33,9 @@ int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, 
   //extract the number of protocols stored in selected array
   int checkSum = indexArray[0];
   int arrayTail = checkSum++;
-
   int buttonStatus = -1;
+
+  int displayIndex = *windowFrame;
 
   // loop while confirm or back have not been pressed
   while(buttonStatus != BUTTON_START || buttonStatus != BUTTON_STOP){
@@ -42,9 +43,12 @@ int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, 
     //lcd->clear();
     lcd->setCursor(0,0);
     lcd->print( "Select: "  );
-    lcd->print( nameArray[*windowFrame] );
-    Serial.print(*windowFrame);
-    
+    // clear out part of the display
+    lcd->print( "        " );
+    // move the cursor back to after 'select: '
+    lcd->setCursor(8,0);
+    lcd->print( nameArray[displayIndex] );
+    Serial.print(displayIndex);
     // read in button press value
     buttonStatus = readAnalogButton(BUTTON_PIN);
     // display the values in the window frame
@@ -60,31 +64,40 @@ int selectPrompt( int indexArray[], const char ** nameArray, int * windowFrame, 
       else if( !((i+1)%3) ){
         // using window frame as the first value in our array to display compute positions relative to this
         // for double digit index protocols
-        if( indexArray[*windowFrame + ((i+1)/3)] >= 10 ){
+        // use -1 to account for off by 1 error
+        if( indexArray[*windowFrame - 1 + ((i+1)/3)] >= 10 ){
           // move cursor back one to print two digits
           lcd->setCursor(i-1, 1);
-          lcd->print(indexArray[*windowFrame + ((i+1)/3)]);
+          lcd->print(indexArray[*windowFrame - 1 + ((i+1)/3)]);
         }
         // for single digit index protocols
-        else if(indexArray[*windowFrame + ((i+1)/3)] < 10){
+        else if(indexArray[*windowFrame - 1 + ((i+1)/3)] < 10){
           // print filler zero if a number is a single digit
           lcd->setCursor(i-1, 1);
           lcd->print(0);
-          lcd->print(indexArray[*windowFrame + ((i+1)/3)]);
+          lcd->print(indexArray[*windowFrame - 1 + ((i+1)/3)]);
         }  
       }
     }
     if(buttonStatus == BUTTON_RIGHT){
-      // the maximum number allowed is 23
-      // _17 _18 _19 _ 2 0 _ 2  1 _
+      // _19 _20 _21 _ 2 2 _ 2  3 _
       // 012 345 678 91011 121314 15
-      if( *windowFrame < (22-5) ){
+    
+      if( *windowFrame < (23-4) ){
         (*windowFrame) += 1;
+      }
+
+      if( displayIndex < 23 ){
+        displayIndex++;
+        
       }
     }
     if(buttonStatus == BUTTON_LEFT){
       if( *windowFrame > 0 ){
       (*windowFrame) -= 1;
+      }
+      if( displayIndex > 0 ){
+        displayIndex--;
       }
     }   
   }
