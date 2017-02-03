@@ -29,11 +29,12 @@
  */
 
 struct ProtocolEntry {
-  int PEID;
-  const char *protocolName;
-  int cycles[MAX_CYCLES];
-  int temps[MAX_CYCLES]; 
+  int pID;
+  const char *pName;
+  int pCycles[MAX_CYCLES];
+  int pTemps[MAX_CYCLES]; 
 };
+
 
 /**
  * Functions defined to be used in arduino memory accesses
