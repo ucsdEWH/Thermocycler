@@ -39,7 +39,7 @@ int * memPtr = memStart;
 // for testing struct
 int testID = 0;
 const char * testString = "foobbarr";
-int testCycles[8] = {1,2,3,4,5,6,7};
+int testCycles = 10;
 int testTemps[8] = {101,102,103,104,105,106,107};
 
 

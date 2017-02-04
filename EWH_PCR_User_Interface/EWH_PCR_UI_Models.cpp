@@ -7,13 +7,15 @@
  *    - each protocol can have a maximum of 8 stages
  *      - 2 ints for each stage (stage length and stage temperature)
  *      - 8 chars for the protocol name
- *      - 2 ints for each stage (num cycles & temperature) * 2 bytes per int * 8 stages + 8 chars= 40 bytes per entry
- *      - 24 entries maximum of 40 bytes each
- *    - reserve first 64 bytes for metadata
- *    | checksum ... XX ... XX | N A M E H E R E | 0 1 2 3 4 5 6 7 ... 0 1 2 3 4 5 6 7 | ... |
- *            Metadata            protocol name        Times               Cycles
+ *      - 1 int for cycles
+ *      - (1 int for each stage (temperature) * 2 bytes per int * 8 stages) + 8 chars + (1 int(cycles) * 2 bytes per int)= 26 bytes per entry
+ *      - maximum of 36 entries at 26 bytes each
+ *    - reserve first 88 bytes for metadata
+ *    | checksum ... XX ... XX | N A M E H E R E | Cycles | 0 1 2 3 4 5 6 7 | ... |
+ *            Metadata            protocol name                     Temps
  *      
- * 
+ * Since Arduino EEPROM library only stores 1 byte at a time, we will write the ints as big endian
+ *  
  */
  
 /* Populates our ProtocolEntry struct with the appropriate fields
@@ -27,11 +29,11 @@
  * Return Value:
  *    return 1 if successful
  */
-int createProtocol( int id, const char * protocolName, int temps[], int cycles[], ProtocolEntry * entry ){
+int createProtocol( int id, const char * protocolName, int temps[], int cycles, ProtocolEntry * entry ){
   entry->pID = id;
   entry->pName = protocolName;
+  entry->pCycles = cycles;
   for( int i=0; i< MAX_CYCLES; i++ ){
-    entry->pCycles[i] = cycles[i];
     entry->pTemps[i] = temps[i];
   }
   return 1;
@@ -48,9 +50,30 @@ int readProtocols(int * payload, ProtocolEntry * protocols[]){
     }
     
   }
-  
 }
 **/
+
+// read the protocol names into memory
+int readNames( int * payload, char * names ){
+  *payload = EEPROM.read(0);
+  // index for the output array
+  int index = 0;
+  for(int i=(METADATA_SIZE-1); i<EEPROM.length(); i++){
+    // define temporary name to read the temperature into
+    char tempName[MAX_NAME_LENGTH];
+    // read in the name as the first entry
+    for( int j=0; j<MAX_NAME_LENGTH; j++ ){
+      tempName[j] = (char)(EEPROM.read(i+j));
+    }
+    names[index] = &tempName;
+    index++;
+    i += ((MAX_STAGES + CYCLE_LEN) * SIZE_INT);
+    
+  }
+
+  
+  
+}
 
 /*
  * Writes the first bit in EEPROM to store the number of protocols the user is currently using
