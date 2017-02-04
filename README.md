@@ -10,6 +10,7 @@
       - select Arduino/Genuino Uno as board
       - select USBasp as programmer
       - upload using programmer
-	- added craig to thermo  
+	- added craig to thermo 
+	- finish tutorials
   
   
