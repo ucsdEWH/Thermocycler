@@ -39,41 +39,75 @@ int createProtocol( int id, const char * protocolName, int temps[], int cycles, 
   return 1;
 }
 
-/**
+
 int readProtocols(int * payload, ProtocolEntry * protocols[]){
   *payload = EEPROM.read(0);
+  // index for the output array
+  int protocolIndex = 0;
+  int romIndex = METADATA_SIZE-1;
   
-  for( int i=(METADATA_SIZE-1); i<EEPROM.length(); i++){
-    char * temp[MAX_NAME_LENGTH];
+  while( romIndex<EEPROM.length()){
+    // process the name string
+    char tempName[MAX_NAME_LENGTH];
     for( int j=0; j< MAX_NAME_LENGTH; j++ ){
-      temp[j] = EEPROM.read(i+j);
+      tempName[j] = EEPROM.read(romIndex+j);
     }
-    
+    // update protolEntry value at index 
+    protocols[protocolIndex]->pName = tempName;
+    // account for the increase from reading in string
+    romIndex+= MAX_NAME_LENGTH;
+
+    // read in the number of stages
+    int tempCycles = 0;
+    readEEPROMInt(&tempCycles, romIndex );
+    protocols[protocolIndex]->pCycles = tempCycles;
+    // update position in eeprom
+    romIndex += SIZE_INT;
+
+    // read in the array of temperature values
+    int tempTemperatures[MAX_CYCLES];
+    for( int k=0; k<(MAX_CYCLES * SIZE_INT); k+=2 ){
+      int tempVal = 0;
+      readEEPROMInt(&tempVal, romIndex + k);
+      protocols[protocolIndex]->pTemps[((int)(k/2))] = tempVal;
+    }
   }
 }
-**/
+
 
 // read the protocol names into memory
-int readNames( int * payload, char * names ){
+int readNames( int * payload, char ** names ){
   *payload = EEPROM.read(0);
   // index for the output array
-  int index = 0;
-  for(int i=(METADATA_SIZE-1); i<EEPROM.length(); i++){
+  int namesIndex = 0;
+  int romIndex = METADATA_SIZE-1;
+  
+  while(romIndex<EEPROM.length()){
     // define temporary name to read the temperature into
     char tempName[MAX_NAME_LENGTH];
     // read in the name as the first entry
     for( int j=0; j<MAX_NAME_LENGTH; j++ ){
-      tempName[j] = (char)(EEPROM.read(i+j));
+      tempName[j] = (char)(EEPROM.read(romIndex+j));
     }
-    names[index] = &tempName;
-    index++;
-    i += ((MAX_STAGES + CYCLE_LEN) * SIZE_INT);
-    
+    names[namesIndex] = tempName;
+    namesIndex++;
+    romIndex += MAX_NAME_LENGTH;
+    romIndex += ((MAX_STAGES + CYCLE_LEN) * SIZE_INT);
   }
-
-  
-  
 }
+
+int readEEPROMInt( int * output , int address){
+    // read in 2 bytes and then combine to make valid int
+    int cycles = 0;
+    unsigned char upperByte = EEPROM.read(address++);
+    unsigned char lowerByte = EEPROM.read(address);
+    // or on lower byte 
+    cycles = (cycles | lowerByte);
+    cycles = cycles | (upperByte << 8);
+
+    *output = cycles;
+}
+
 
 /*
  * Writes the first bit in EEPROM to store the number of protocols the user is currently using
@@ -85,15 +119,28 @@ int readNames( int * payload, char * names ){
  *    int returned represents the payload written
  *    TODO: returns -1 on failure 
  */
+ 
 int writeMetadata(int payload){
   EEPROM.write(0, payload);
 }
 
+// write protocol into the EEPROM
 
-int * writeProtocolData(int newIndexArray[]){
-  for( int index = 0; index < MAX_ENTRIES; index++){
+/*
+ * Writes protocol entry to the end of the EEPROM where there is an opening
+ *
+ * Arguments:
+ *    int id is the 
+ *
+ * Return Value:
+ *    int returned represents the payload written
+ *    TODO: returns -1 on failure 
+ */
+int writeProtocolData( ProtocolEntry protocol){
+  for(int i=(METADATA_SIZE-1); i<EEPROM.length(); i++){
     
   }
-    
+  
 }
-const char * writeProtocolData(const char * newNameArray[]){}
+// delete protol in the EEPROM
+int deleteProtocolData( int id, ProtocolEntry protocol){}
