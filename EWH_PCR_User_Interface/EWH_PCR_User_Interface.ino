@@ -102,7 +102,7 @@ void loop() {
   // set the LED:
   // digitalWrite(ledPin, controlState);
   //selectPrompt(memStart, names, &windowFrame, &lcd);
-  deletePrompt(testProtocols, &windowFrame, &lcd);
+  //deletePrompt(testProtocols, &windowFrame, &lcd);
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
   lastButtonState = reading;
