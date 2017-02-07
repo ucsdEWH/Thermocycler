@@ -47,6 +47,8 @@ int createProtocol( int id, const char * protocolName, int temps[], int cycles, 
 int readProtocols(int * payload, ProtocolEntry * protocols[]);
 // read the protocol names into memory
 int readNames( int * payload, char ** names );
+// read single protocol into memory
+int readEntry(int id, ProtocolEntry * protocol, const char * protocolName);
 
 
 // write payload

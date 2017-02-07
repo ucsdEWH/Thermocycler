@@ -40,6 +40,16 @@ int createProtocol( int id, const char * protocolName, int temps[], int cycles, 
   return 1;
 }
 
+/*
+ * Reads all Protocols from EEPROM into memory
+ *
+ * Arguments:
+ *    ProtocolEntry * protocols is the array of structs to contain eeprom values
+ *    int * payload is the number of entries currently recorded in the metadata
+ *    
+ * Return Value:
+ *    TODO: returns -1 on failure 
+ */
 
 int readProtocols(int * payload, ProtocolEntry * protocols[]){
   *payload = EEPROM.read(0);
@@ -75,6 +85,61 @@ int readProtocols(int * payload, ProtocolEntry * protocols[]){
   }
 }
 
+/*
+ * Reads Protocol from EEPROM based on protocol ID
+ *
+ * Arguments:
+ *    int id represents the protocol id of entry we wish to find
+ *    TODO: implement a check to match protocol name
+ *    
+ * Return Value:
+ *    TODO: returns -1 on failure 
+ */
+
+int readEntry(int id, ProtocolEntry * protocol, const char * protocolName){
+  int romIndex = METADATA_SIZE-1;
+  // increment the array until we approach the position in the array 
+  int protocolSize = id * ( MAX_NAME_LENGTH + SIZE_INT + (SIZE_INT * MAX_CYCLES) );
+  romIndex += protocolSize;
+  // TODO: IMPLEMENT CHECK TO MAKE SURE CORRECT ENTRY IS READ
+  
+
+  // process the name string
+  char tempName[MAX_NAME_LENGTH];
+  for( int j=0; j< MAX_NAME_LENGTH; j++ ){
+    tempName[j] = EEPROM.read(romIndex+j);
+  }
+  // update protolEntry value at index 
+  protocol->pName = tempName;
+  // account for the increase from reading in string
+  romIndex+= MAX_NAME_LENGTH;
+
+  // read in the number of stages
+  int tempCycles = 0;
+  readEEPROMInt(romIndex, &tempCycles);
+  protocol->pCycles = tempCycles;
+  // update position in eeprom
+  romIndex += SIZE_INT;
+
+  // read in the array of temperature values
+  int tempTemperatures[MAX_CYCLES];
+  for( int k=0; k<(MAX_CYCLES * SIZE_INT); k+=2 ){
+    int tempVal = 0;
+    readEEPROMInt(romIndex + k, &tempVal);
+    protocol->pTemps[((int)(k/2))] = tempVal;
+  }
+}
+
+/*
+ * Reads only protocol names into memory as to reduce the space requires on the SRAM
+ *
+ * Arguments:
+ *    char ** names is an array of strings to record the protocol names tracked
+ *    int * payload is the number of entries currently recorded in the metadata
+ *    
+ * Return Value:
+ *    TODO: returns -1 on failure 
+ */
 
 // read the protocol names into memory
 int readNames( int * payload, char ** names ){
@@ -130,6 +195,7 @@ int readEEPROMInt( int address, int * output){
  *    int address is the location in the EEPROM to read from
  * 
  */
+ 
 int writeEEPROMInt(int address, int input){
   // extract upper and lower bits
   unsigned char lowerByte = input & 0xff;
@@ -153,7 +219,6 @@ int writeEEPROMInt(int address, int input){
 int writeMetadata(int payload){
   EEPROM.write(0, payload);
 }
-
 
 /*
  * Writes protocol entry to the end of the EEPROM where there is an opening
@@ -232,6 +297,7 @@ int writeProtocolData( ProtocolEntry protocol){
  *    int returned represents the payload written
  *    TODO: returns -1 on failure 
  */
+ 
 int deleteProtocolData( int id, ProtocolEntry protocol){
   int romIndex = METADATA_SIZE-1;
   // increment the array until we approach the position in the array 
