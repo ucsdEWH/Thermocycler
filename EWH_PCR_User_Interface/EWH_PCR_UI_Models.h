@@ -56,6 +56,7 @@ int writeProtocolData( ProtocolEntry protocol);
 // delete protol in the EEPROM
 int deleteProtocolData( int id, ProtocolEntry protocol);
 
-int readEEPROMInt( int * output , int address);
+int readEEPROMInt(int address, int * output);
+int writeEEPROMInt(int address, int input);
 
 #endif

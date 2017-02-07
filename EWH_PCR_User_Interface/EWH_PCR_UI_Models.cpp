@@ -1,4 +1,5 @@
 #include "EWH_PCR_UI_Models.h"
+#include <string.h>
 
 /**
  * 
@@ -12,7 +13,7 @@
  *      - maximum of 36 entries at 26 bytes each
  *    - reserve first 88 bytes for metadata
  *    | checksum ... XX ... XX | N A M E H E R E | Cycles | 0 1 2 3 4 5 6 7 | ... |
- *            Metadata            protocol name                     Temps
+ *            Metadata            protocol name                       Temps
  *      
  * Since Arduino EEPROM library only stores 1 byte at a time, we will write the ints as big endian
  *  
@@ -59,7 +60,7 @@ int readProtocols(int * payload, ProtocolEntry * protocols[]){
 
     // read in the number of stages
     int tempCycles = 0;
-    readEEPROMInt(&tempCycles, romIndex );
+    readEEPROMInt(romIndex, &tempCycles);
     protocols[protocolIndex]->pCycles = tempCycles;
     // update position in eeprom
     romIndex += SIZE_INT;
@@ -68,7 +69,7 @@ int readProtocols(int * payload, ProtocolEntry * protocols[]){
     int tempTemperatures[MAX_CYCLES];
     for( int k=0; k<(MAX_CYCLES * SIZE_INT); k+=2 ){
       int tempVal = 0;
-      readEEPROMInt(&tempVal, romIndex + k);
+      readEEPROMInt(romIndex + k, &tempVal);
       protocols[protocolIndex]->pTemps[((int)(k/2))] = tempVal;
     }
   }
@@ -96,7 +97,18 @@ int readNames( int * payload, char ** names ){
   }
 }
 
-int readEEPROMInt( int * output , int address){
+/*
+ * Helper function to read an integer from EEPROM. 
+ * Read two consecutive bytes. 
+ * Left shift the upper byte and then or both bytes onto 0
+ * 
+ * Arguments:
+ *    int * output is the address of the output int
+ *    int address is the location in the EEPROM to read from
+ * 
+ */
+
+int readEEPROMInt( int address, int * output){
     // read in 2 bytes and then combine to make valid int
     int cycles = 0;
     unsigned char upperByte = EEPROM.read(address++);
@@ -108,6 +120,27 @@ int readEEPROMInt( int * output , int address){
     *output = cycles;
 }
 
+/*
+ * Helper function to write an integer to EEPROM in big endian 
+ * Write two consecutive bytes. 
+ * Write upper byte and then lower byte
+ * 
+ * Arguments:
+ *    int input is the integer to write
+ *    int address is the location in the EEPROM to read from
+ * 
+ */
+int writeEEPROMInt(int address, int input){
+  unsigned char upperByte = 0;
+  unsigned char lowerByte = 0;
+
+  lowerByte = input & 0xff;
+  upperByte = (input>>8) & 0xff;
+
+  EEPROM.write(address++, lowerByte);
+  EEPROM.write(address, upperByte);
+  
+}
 
 /*
  * Writes the first bit in EEPROM to store the number of protocols the user is currently using
@@ -137,10 +170,58 @@ int writeMetadata(int payload){
  *    TODO: returns -1 on failure 
  */
 int writeProtocolData( ProtocolEntry protocol){
-  for(int i=(METADATA_SIZE-1); i<EEPROM.length(); i++){
+  int romIndex = METADATA_SIZE-1;
+  while(romIndex<EEPROM.length()){
+    int unwrittenBool = 0;
     
+    // first check if the name array is set to the default name array of '        '
+    const char * defaultStr = "        ";
+    // define temporary name to read the temperature into
+    char tempName[MAX_NAME_LENGTH];
+    // read in the name as the first entry
+    for( int j=0; j<MAX_NAME_LENGTH; j++ ){
+      tempName[j] = (char)(EEPROM.read(romIndex+j));
+    }
+    if( strcmp(defaultStr, tempName ) ){
+      unwrittenBool++;
+    }
+    romIndex+= MAX_NAME_LENGTH;
+    
+    // we will use cycles = -1 as an indicator of an unwritten block of memory
+    // read in the number of stages
+    int tempCycles = 0;
+    readEEPROMInt(romIndex, &tempCycles);
+    if( tempCycles != -1 ){
+      unwrittenBool++;
+    }
+    romIndex += SIZE_INT;
+    // cannot use a defualt temperature value distinct from other real values
+    // skip over the temperature array as it is not useful default checking
+    romIndex+= (MAX_STAGES * SIZE_INT);
+
+    if(unwrittenBool==0){
+      for( int j=0; j<MAX_NAME_LENGTH; j++){
+        EEPROM.write(romIndex, protocol.pName[j]);
+        // TODO: WRITE THE NAME STRING FROM THE PROTOCOL ENTRY INTO MEMORY
+      }
+      romIndex += MAX_NAME_LENGTH;
+
+      // write cycles
+      writeEEPROMInt(romIndex, protocol.pCycles);
+      romIndex+= SIZE_INT;
+
+      // write temperature array
+      int tempTemperatures[MAX_CYCLES];
+      for( int k=0; k<(MAX_CYCLES * SIZE_INT); k+=2 ){
+        writeEEPROMInt( romIndex + k, protocol.pTemps[(k/2)] );
+      }
+      romIndex += (MAX_STAGES * SIZE_INT);
+      int totalEntries = EEPROM.read(0);
+      writeMetadata( ++totalEntries );
+      return 1;
+    } 
   }
-  
+  return -1;
 }
 // delete protol in the EEPROM
 int deleteProtocolData( int id, ProtocolEntry protocol){}
