@@ -131,15 +131,12 @@ int readEEPROMInt( int address, int * output){
  * 
  */
 int writeEEPROMInt(int address, int input){
-  unsigned char upperByte = 0;
-  unsigned char lowerByte = 0;
-
-  lowerByte = input & 0xff;
-  upperByte = (input>>8) & 0xff;
+  // extract upper and lower bits
+  unsigned char lowerByte = input & 0xff;
+  unsigned char upperByte = (input>>8) & 0xff;
 
   EEPROM.write(address++, lowerByte);
   EEPROM.write(address, upperByte);
-  
 }
 
 /*
@@ -152,23 +149,23 @@ int writeEEPROMInt(int address, int input){
  *    int returned represents the payload written
  *    TODO: returns -1 on failure 
  */
- 
+
 int writeMetadata(int payload){
   EEPROM.write(0, payload);
 }
 
-// write protocol into the EEPROM
 
 /*
  * Writes protocol entry to the end of the EEPROM where there is an opening
  *
  * Arguments:
- *    int id is the 
+ *    ProtocolEntry Protocol is the struct containing values to record
  *
  * Return Value:
  *    int returned represents the payload written
  *    TODO: returns -1 on failure 
  */
+ 
 int writeProtocolData( ProtocolEntry protocol){
   int romIndex = METADATA_SIZE-1;
   while(romIndex<EEPROM.length()){
@@ -223,5 +220,52 @@ int writeProtocolData( ProtocolEntry protocol){
   }
   return -1;
 }
-// delete protol in the EEPROM
-int deleteProtocolData( int id, ProtocolEntry protocol){}
+
+/*
+ * Deletes protocol entry in the array
+ *
+ * Arguments:
+ *    int id is the position of the ProtocolEntry to remove
+ *    TODO: add checks to make sure entry being removed is indeed entry in EEPROM
+ *
+ * Return Value:
+ *    int returned represents the payload written
+ *    TODO: returns -1 on failure 
+ */
+int deleteProtocolData( int id, ProtocolEntry protocol){
+  int romIndex = METADATA_SIZE-1;
+  // increment the array until we approach the position in the array 
+  int protocolSize = id * ( MAX_NAME_LENGTH + SIZE_INT + (SIZE_INT * MAX_CYCLES) );
+  romIndex += protocolSize;
+  // from this position, overwrite old data with the following entry so that the selected entry is effectively deleted
+
+  // TODO: IMPLEMENT CHECK TO MAKE SURE CORRECT ENTRY IS REMOVED
+  
+  while( romIndex<EEPROM.length()-protocolSize){
+    EEPROM.write(romIndex, EEPROM.read(romIndex+protocolSize));
+  }
+
+  // check if the last protocol needs to be re-written
+  int totalEntries = EEPROM.read(0);
+  if( totalEntries == MAX_ENTRIES ){
+    // write default values to the last entry in EEPROM
+    for( int j=0; j<MAX_NAME_LENGTH; j++){
+      unsigned char space[] = " ";
+      EEPROM.write(romIndex, *space);
+    }
+
+    // write cycles
+    int defaultCycles = -1;
+    writeEEPROMInt(romIndex, defaultCycles );
+    romIndex+= SIZE_INT;
+
+    // write temperature array defaults
+    int defaultTemp = -1;
+    for( int k=0; k<(MAX_CYCLES * SIZE_INT); k+=2 ){
+      writeEEPROMInt( romIndex + k, defaultTemp );
+    }
+    romIndex += (MAX_STAGES * SIZE_INT);
+    
+    writeMetadata( --totalEntries );
+  }
+}
