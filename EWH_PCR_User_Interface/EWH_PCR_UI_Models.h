@@ -42,6 +42,8 @@ struct ProtocolEntry {
 // function to populate fields of a ProtocolEntry struct
 int createProtocol( int id, const char * protocolName, int temps[], int cycles, ProtocolEntry * entry );
 
+//function to intialize the EEPROM to default values
+int initEEPROM();
 
 // read all protocols into memory
 int readProtocols(int * payload, ProtocolEntry * protocols[]);

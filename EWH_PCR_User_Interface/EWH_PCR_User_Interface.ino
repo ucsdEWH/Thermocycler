@@ -17,20 +17,24 @@ int lastButtonState = 0;      // the previous reading from the input pin
 long lastDebounceTime = 0;  // the last time the output pin was toggled
 long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
-int windowFrame = 0; 
+int windowFrame = 0;
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal_I2C  lcd(I2C_ADDR, EN_PIN, RW_PIN, RS_PIN, D4_PIN, D5_PIN, D6_PIN, D7_PIN);
 
 /*****************************************TEMPORARY FOR TESTING*************************************/
 
-int testMemory[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 
-17, 18, 19, 20, 21, 22, 23};
-const char * names[MAX_ENTRIES] = {"0", "1", "2", "3", "4", "5", "6", "7", 
-"8", "9", "10", "11", "12", "13", "14", "15", 
-"16", "17", "18", "19", "20", "21", "22", "23"};
+int testMemory[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                    17, 18, 19, 20, 21, 22, 23
+                   };
+const char * names[MAX_ENTRIES] = {"0", "1", "2", "3", "4", "5", "6", "7",
+                                   "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+                                   "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35"
+                                  };
 
 ProtocolEntry testProtocols[MAX_ENTRIES];
+ProtocolEntry testEntry;
+ProtocolEntry testEntry2;
 
 // TODO: check this part..... careful with references
 int * memStart = &testMemory[0];
@@ -40,7 +44,7 @@ int * memPtr = memStart;
 int testID = 0;
 const char * testString = "foobbarr";
 int testCycles = 10;
-int testTemps[8] = {101,102,103,104,105,106,107};
+int testTemps[8] = {100, 101, 102, 103, 104, 105, 106, 107};
 
 
 /*****************************************END TEMP CONSTANTS*************************************/
@@ -53,24 +57,41 @@ void setup() {
   lcd.clear();
 
   // put your main code here, to run repeatedly:
-  for( int i=0; i<MAX_ENTRIES; i++ ){
+  /*
+    for( int i=0; i<MAX_ENTRIES; i++ ){
     ProtocolEntry testEntry;
     createProtocol( i, names[i], testTemps, testCycles, &testEntry );
     testProtocols[i] = testEntry;
-  }
-  
-  /**
-  for( int i=0; i < 8; i++ ){
-    Serial.println(testEntry.pID);
-    Serial.println(testEntry.pName);
-    Serial.println( testEntry.pCycles[i] );
-    Serial.println( testEntry.pTemps[i] );
-  }
+    }
   */
 
+  //initEEPROM();
+  for (int i = 0; i < EEPROM.length(); i++) {
+    Serial.println( EEPROM.read( i ) );
+  }
+
+  createProtocol( 0, "foobar", testTemps, testCycles, &testEntry );
+  //writeProtocolData( testEntry );
+  readEntry(0, &testEntry2, "foobar");
+
+  
+    Serial.println(testEntry2.pID);
+    Serial.println( testEntry2.pCycles );
+    for( int i=0; i<8; i++){
+      Serial.println( testEntry2.pTemps[i] );
+    }
+    for( int i=0; i < 8; i++ ){
+      Serial.println( testEntry2.pName[i], HEX );
+    }
+    Serial.println( testEntry2.pName );
+  
 }
 
 void loop() {
+  int output = 0;
+  readEEPROMInt( 96, &output);
+  //Serial.print( output );
+  
   // read the state of the switch into a local variable:
   int reading = readAnalogButton(BUTTON_PIN);
 
@@ -101,10 +122,13 @@ void loop() {
 
   // set the LED:
   // digitalWrite(ledPin, controlState);
-  //selectPrompt(memStart, names, &windowFrame, &lcd);
-  //deletePrompt(testProtocols, &windowFrame, &lcd);
+  // selectPrompt(names, &windowFrame, &lcd);
+  // selectPrompt(memStart, names, &windowFrame, &lcd);
+  // deletePrompt(testProtocols, &windowFrame, &lcd);
+
+  confirm( testEntry2, &windowFrame, &lcd);
+
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
   lastButtonState = reading;
-  
 }

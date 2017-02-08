@@ -1,5 +1,6 @@
 #include "EWH_PCR_UI_Models.h"
 #include <string.h>
+#include <stdio.h>
 
 /**
  * 
@@ -40,6 +41,49 @@ int createProtocol( int id, const char * protocolName, int temps[], int cycles, 
   return 1;
 }
 
+/* Populates our ProtocolEntry struct with the appropriate fields
+ * 
+ * Arguments: None
+ * 
+ * Return Value:
+ *    return 1 if successful
+ */
+ int initEEPROM(){
+  int romIndex = 0;
+
+  // write the metadata section
+  while( romIndex < METADATA_SIZE ){
+    EEPROM.write( romIndex, 0 );
+    romIndex++;
+  }
+
+  writeMetadata(0);
+
+  // write entries into memory
+  while( romIndex < EEPROM.length() ){
+    for( int j=0; j<MAX_NAME_LENGTH; j++){
+        EEPROM.write(romIndex+j, ' ');
+      }
+      romIndex += MAX_NAME_LENGTH;
+
+      // write cycles
+      writeEEPROMInt(romIndex, -1);
+      romIndex+= SIZE_INT;
+
+      // write temperature array
+      int tempTemperatures[MAX_CYCLES];
+      for( int k=0; k<(MAX_CYCLES * SIZE_INT); k+=2 ){
+        writeEEPROMInt( romIndex + k, 0 );
+      }
+      romIndex += (MAX_STAGES * SIZE_INT);
+  }
+
+  
+ }
+
+
+
+
 /*
  * Reads all Protocols from EEPROM into memory
  *
@@ -55,7 +99,7 @@ int readProtocols(int * payload, ProtocolEntry * protocols[]){
   *payload = EEPROM.read(0);
   // index for the output array
   int protocolIndex = 0;
-  int romIndex = METADATA_SIZE-1;
+  int romIndex = METADATA_SIZE;
   
   while( romIndex<EEPROM.length()){
     // process the name string
@@ -97,17 +141,18 @@ int readProtocols(int * payload, ProtocolEntry * protocols[]){
  */
 
 int readEntry(int id, ProtocolEntry * protocol, const char * protocolName){
-  int romIndex = METADATA_SIZE-1;
+  int romIndex = METADATA_SIZE;
   // increment the array until we approach the position in the array 
   int protocolSize = id * ( MAX_NAME_LENGTH + SIZE_INT + (SIZE_INT * MAX_CYCLES) );
   romIndex += protocolSize;
   // TODO: IMPLEMENT CHECK TO MAKE SURE CORRECT ENTRY IS READ
-  
+  protocol->pID = id;
 
   // process the name string
   char tempName[MAX_NAME_LENGTH];
   for( int j=0; j< MAX_NAME_LENGTH; j++ ){
     tempName[j] = EEPROM.read(romIndex+j);
+    fprintf( stderr, EEPROM.read(romIndex+j));
   }
   // update protolEntry value at index 
   protocol->pName = tempName;
@@ -146,7 +191,7 @@ int readNames( int * payload, char ** names ){
   *payload = EEPROM.read(0);
   // index for the output array
   int namesIndex = 0;
-  int romIndex = METADATA_SIZE-1;
+  int romIndex = METADATA_SIZE;
   
   while(romIndex<EEPROM.length()){
     // define temporary name to read the temperature into
@@ -201,8 +246,8 @@ int writeEEPROMInt(int address, int input){
   unsigned char lowerByte = input & 0xff;
   unsigned char upperByte = (input>>8) & 0xff;
 
-  EEPROM.write(address++, lowerByte);
-  EEPROM.write(address, upperByte);
+  EEPROM.write(address++, upperByte);
+  EEPROM.write(address, lowerByte);
 }
 
 /*
@@ -232,7 +277,7 @@ int writeMetadata(int payload){
  */
  
 int writeProtocolData( ProtocolEntry protocol){
-  int romIndex = METADATA_SIZE-1;
+  int romIndex = METADATA_SIZE;
   while(romIndex<EEPROM.length()){
     int unwrittenBool = 0;
     
@@ -259,11 +304,14 @@ int writeProtocolData( ProtocolEntry protocol){
     romIndex += SIZE_INT;
     // cannot use a defualt temperature value distinct from other real values
     // skip over the temperature array as it is not useful default checking
-    romIndex+= (MAX_STAGES * SIZE_INT);
-
-    if(unwrittenBool==0){
+    romIndex += (MAX_STAGES * SIZE_INT);
+    if( 1 ) {
+    //if(unwrittenBool==0){
+      int protocolSize = ( MAX_NAME_LENGTH + SIZE_INT + (SIZE_INT * MAX_CYCLES) );
+      romIndex -= protocolSize;
+    
       for( int j=0; j<MAX_NAME_LENGTH; j++){
-        EEPROM.write(romIndex, protocol.pName[j]);
+        EEPROM.write(romIndex+j, protocol.pName[j]);
         // TODO: WRITE THE NAME STRING FROM THE PROTOCOL ENTRY INTO MEMORY
       }
       romIndex += MAX_NAME_LENGTH;
@@ -299,7 +347,7 @@ int writeProtocolData( ProtocolEntry protocol){
  */
  
 int deleteProtocolData( int id, ProtocolEntry protocol){
-  int romIndex = METADATA_SIZE-1;
+  int romIndex = METADATA_SIZE;
   // increment the array until we approach the position in the array 
   int protocolSize = id * ( MAX_NAME_LENGTH + SIZE_INT + (SIZE_INT * MAX_CYCLES) );
   romIndex += protocolSize;
@@ -317,7 +365,7 @@ int deleteProtocolData( int id, ProtocolEntry protocol){
     // write default values to the last entry in EEPROM
     for( int j=0; j<MAX_NAME_LENGTH; j++){
       unsigned char space[] = " ";
-      EEPROM.write(romIndex, *space);
+      EEPROM.write(romIndex+j, *space);
     }
 
     // write cycles

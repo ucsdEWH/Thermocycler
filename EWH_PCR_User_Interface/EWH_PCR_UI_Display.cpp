@@ -24,7 +24,7 @@ int numSelection( int rangeMin, int rangeMax, LiquidCrystal_I2C * lcd, int row )
  * Return Value:
  *    int
  */
-int selectPrompt( char ** protocolNames, int * windowFrame, LiquidCrystal_I2C * lcd ){
+int selectPrompt( const char ** protocolNames, int * windowFrame, LiquidCrystal_I2C * lcd ){
   // prompt user
   int buttonStatus = -1;
   int displayIndex = *windowFrame;
@@ -78,17 +78,17 @@ int selectPrompt( char ** protocolNames, int * windowFrame, LiquidCrystal_I2C * 
       // _19 _20 _21 _ 2 2 _ 2  3 _
       // 012 345 678 91011 121314 15
     
-      if( *windowFrame < (23-4) ){
+      if( *windowFrame < (35-4) ){
         (*windowFrame) += 1;
       }
 
-      if( displayIndex < 23 ){
+      if( displayIndex < 35 ){
         displayIndex++;
         
       }
     }
     if(buttonStatus == BUTTON_LEFT){
-      if( *windowFrame > 0 && displayIndex < (24-4)){
+      if( *windowFrame > 0 && displayIndex < (36-4)){
       (*windowFrame) -= 1;
       }
       if( displayIndex > 0 ){
@@ -365,17 +365,17 @@ int deletePrompt( const char ** protocolNames, int * windowFrame, LiquidCrystal_
       // _19 _20 _21 _ 2 2 _ 2  3 _
       // 012 345 678 91011 121314 15
     
-      if( *windowFrame < (23-4) ){
+      if( *windowFrame < (35-4) ){
         (*windowFrame) += 1;
       }
 
-      if( displayIndex < 23 ){
+      if( displayIndex < 35 ){
         displayIndex++;
         
       }
     }
     if(buttonStatus == BUTTON_LEFT){
-      if( *windowFrame > 0 && displayIndex < (24-4)){
+      if( *windowFrame > 0 && displayIndex < (36-4)){
       (*windowFrame) -= 1;
       }
       if( displayIndex > 0 ){
@@ -488,6 +488,7 @@ int deletePrompt( ProtocolEntry protocols[], int * windowFrame, LiquidCrystal_I2
   }
 }
 */
+
 int * createPrompt(){}
 
 int confirm(ProtocolEntry selected, int * windowFrame, LiquidCrystal_I2C * lcd ){
@@ -497,6 +498,9 @@ int confirm(ProtocolEntry selected, int * windowFrame, LiquidCrystal_I2C * lcd )
 
   // loop while confirm or back have not been pressed
   while(buttonStatus != BUTTON_START || buttonStatus != BUTTON_STOP){  
+
+    // read in button press value
+    buttonStatus = readAnalogButton(BUTTON_PIN);
  
     lcd->setCursor(0,0);
     lcd->print( "Verify: "  );
@@ -508,20 +512,28 @@ int confirm(ProtocolEntry selected, int * windowFrame, LiquidCrystal_I2C * lcd )
 
     
     // TODO: MODIFY CODE TO SCROLL WINDOW FRAME VERTICALLY
-    if( windowFrame == 0 ){
+    if( *windowFrame == 0 ){
       lcd->setCursor(0,1);
       lcd->print("Cycles: ");
+      // clear out part of display
+      lcd->print( "        " );
+      // move cursor back
+      lcd->setCursor(8,1);
       lcd->print(selected.pCycles);
     }
     else{
       lcd->setCursor(0, 1);
       lcd->print("Celsius: ");
-      lcd->print(selected.pTemps[*windowFrame-1]);
+      // clear out part of display
+      lcd->print( "        " );
+      // move cursor back
+      lcd->setCursor(8,1);
+      lcd->print(selected.pTemps[(*windowFrame)-1]);
     }
     
     // change the values on the display
     if(buttonStatus == BUTTON_RIGHT){
-      if( *windowFrame < (24+1) ){
+      if( *windowFrame < (7+1) ){
         (*windowFrame) += 1;
       }
     }
