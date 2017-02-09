@@ -152,7 +152,7 @@ int readEntry(int id, ProtocolEntry * protocol, const char * protocolName){
   char tempName[MAX_NAME_LENGTH];
   for( int j=0; j< MAX_NAME_LENGTH; j++ ){
     tempName[j] = EEPROM.read(romIndex+j);
-    fprintf( stderr, EEPROM.read(romIndex+j));
+    //fprintf( stderr, EEPROM.read(romIndex+j));
   }
   // update protolEntry value at index 
   protocol->pName = tempName;
@@ -198,7 +198,7 @@ int readNames( int * payload, char ** names ){
     char tempName[MAX_NAME_LENGTH];
     // read in the name as the first entry
     for( int j=0; j<MAX_NAME_LENGTH; j++ ){
-      tempName[j] = (char)(EEPROM.read(romIndex+j));
+      tempName[j] = (EEPROM.read(romIndex+j));
     }
     names[namesIndex] = tempName;
     namesIndex++;
